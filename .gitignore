@@ -1,0 +1,17 @@
+﻿.vs
+.idea
+bin
+obj
+packages
+*.vspscc
+*.user
+*.jfm
+*.refactorlog
+*.dbmdl
+
+#### local ignore
+*.log
+/backup
+*.spec
+/_db
+/.vscode
