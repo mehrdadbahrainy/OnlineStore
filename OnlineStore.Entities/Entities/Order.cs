@@ -2,7 +2,7 @@
 
 namespace OnlineStore.Entities.Entities;
 
-public class Order
+public class Order : IBaseEntity
 {
     public int Id { get; set; }
     public int UserId { get; set; }
