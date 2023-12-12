@@ -26,15 +26,31 @@ public abstract class BaseService<TEntity, TKey>
         _dbSet = dataContext.Set<TEntity>();
     }
 
-    public Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> expression)
+    public Task<List<TEntity>> GetAllAsync(
+        Expression<Func<TEntity, bool>> expression,
+        bool noTracking = false)
     {
-        return _dbSet.Where(expression).ToListAsync();
+        var query = _dbSet;
+
+        if (noTracking)
+        {
+            query.AsNoTracking();
+        }
+
+        return query.Where(expression).ToListAsync();
     }
 
-    public Task<List<TEntity>> GetPagedAsync(Expression<Func<TEntity, bool>> expression,
-        Pagination pagination)
+    public Task<List<TEntity>> GetPagedAsync(
+        Expression<Func<TEntity, bool>> expression,
+        Pagination pagination,
+        bool noTracking = false)
     {
         var query = _dbSet.Where(expression);
+
+        if (noTracking)
+        {
+            query.AsNoTracking();
+        }
 
         query = pagination.SortOrder == SortOrder.Ascending ?
             query.OrderBy(x => x.Id) :
@@ -46,9 +62,16 @@ public abstract class BaseService<TEntity, TKey>
             .ToListAsync();
     }
 
-    public Task<TEntity> GetByIdAsync(TKey key)
+    public Task<TEntity> GetByIdAsync(TKey key, bool noTracking = false)
     {
-        return _dbSet.SingleOrDefaultAsync(x => x.Id!.Equals(key));
+        var query = _dbSet;
+
+        if (noTracking)
+        {
+            query.AsNoTracking();
+        }
+
+        return query.SingleOrDefaultAsync(x => x.Id!.Equals(key));
     }
 
     public void Add(TEntity entity)
@@ -76,10 +99,19 @@ public abstract class BaseService<TEntity, TKey>
         }
     }
 
-    public void Delete(TKey id)
+    public void Delete(TKey key)
     {
-        var entity = GetByIdAsync(id).Result;
+        var entity = GetByIdAsync(key).Result;
         Delete(entity);
     }
 
+    public int SaveChanges()
+    {
+        return _dataContext.SaveChanges();
+    }
+
+    public Task SaveChangesAsync()
+    {
+        return _dataContext.SaveChangesAsync();
+    }
 }

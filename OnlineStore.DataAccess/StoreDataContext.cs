@@ -1,11 +1,11 @@
-﻿using System.Data.Entity;
+﻿using Microsoft.EntityFrameworkCore;
 using OnlineStore.Entities.Entities;
 
 namespace OnlineStore.DataAccess
 {
     public class StoreDataContext : DbContext
     {
-        public StoreDataContext()
+        public StoreDataContext(DbContextOptions<StoreDataContext> options) : base(options)
         {
         }
 
@@ -15,8 +15,9 @@ namespace OnlineStore.DataAccess
         public DbSet<OrderItem> OrderItem { get; set; }
         public DbSet<User> User { get; set; }
 
-        protected override void OnModelCreating(DbModelBuilder modelBuilder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+
             modelBuilder.Entity<Category>()
                 .ToTable("Category");
 

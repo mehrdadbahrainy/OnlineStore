@@ -7,9 +7,4 @@
     public interface IBaseEntity : IBaseEntity<int>
     {
     }
-
-    public interface ISoftDeleteEnabledBase
-    {
-        public bool IsDeleted { get; set; }
-    }
 }
