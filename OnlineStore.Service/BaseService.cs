@@ -1,5 +1,5 @@
-﻿using System.Data.Entity;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
 using OnlineStore.DataAccess;
 using OnlineStore.Entities.Entities;
 using OnlineStore.Service.Models;
@@ -62,7 +62,21 @@ public abstract class BaseService<TEntity, TKey>
             .ToListAsync();
     }
 
-    public Task<TEntity> GetByIdAsync(TKey key, bool noTracking = false)
+    public Task<TEntity?> GetSingleAsync(
+        Expression<Func<TEntity, bool>> expression,
+        bool noTracking = false)
+    {
+        var query = _dbSet;
+
+        if (noTracking)
+        {
+            query.AsNoTracking();
+        }
+
+        return query.SingleOrDefaultAsync(expression);
+    }
+
+    public Task<TEntity?> GetByIdAsync(TKey key, bool noTracking = false)
     {
         var query = _dbSet;
 
