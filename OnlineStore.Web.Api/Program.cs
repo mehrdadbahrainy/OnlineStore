@@ -1,7 +1,11 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using OnlineStore.DataAccess;
 using OnlineStore.Service;
+using OnlineStore.Web.Api.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 string _allowSpecificOrigins = "_allowSpecificOrigins";
@@ -26,6 +30,7 @@ var contextOptions = new DbContextOptionsBuilder<StoreDataContext>()
 
 builder.Services.AddTransient<StoreDataContext>(context => new StoreDataContext(contextOptions));
 builder.Services.AddServices();
+builder.Services.AddScoped<Authentication>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(option =>
@@ -55,6 +60,21 @@ builder.Services.AddSwaggerGen(option =>
         }
     });
 });
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = configuration["Jwt:JwtIssuer"],
+            ValidAudience = configuration["Jwt:JwtAudience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:JwtKey"]))
+        };
+    });
 
 var app = builder.Build();
 

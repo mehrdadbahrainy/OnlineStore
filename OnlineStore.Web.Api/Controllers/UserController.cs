@@ -9,10 +9,13 @@ namespace OnlineStore.Web.Api.Controllers
     [Route("api/user")]
     public class UserController : BaseApiController
     {
+        private readonly Authentication _authentication;
         private readonly StoreServices _storeServices;
 
-        public UserController(StoreServices storeServices)
+        public UserController(Authentication authentication,
+            StoreServices storeServices)
         {
+            _authentication = authentication;
             _storeServices = storeServices;
         }
 
@@ -30,11 +33,14 @@ namespace OnlineStore.Web.Api.Controllers
                     return Unauthorized();
                 }
 
+
                 var password = Utils.Encryption.GetMd5Hash($"{request.Password}_{user.PasswordSalt}");
 
                 if (password.Equals(user.Password))
                 {
-                    return Ok();
+                    var token = _authentication.GenerateJwtAuthentication(user.Username, "");
+
+                    return Ok(token);
                 }
 
                 return Unauthorized();
