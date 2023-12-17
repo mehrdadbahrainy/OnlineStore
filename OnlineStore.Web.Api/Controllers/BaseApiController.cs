@@ -18,4 +18,18 @@ public abstract class BaseApiController : ControllerBase
                 rollOnFileSizeLimit: true)
             .CreateLogger();
     }
+
+    public int? UserId
+    {
+        get
+        {
+            var userIdentity = this.User.Identity;
+            if (userIdentity is { IsAuthenticated: true })
+            {
+                return int.Parse(this.User.Claims.First(i => i.Type == "UserId").Value);
+            }
+
+            return null;
+        }
+    }
 }

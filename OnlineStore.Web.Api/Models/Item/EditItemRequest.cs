@@ -1,7 +1,8 @@
 ﻿namespace OnlineStore.Web.Api.Models.Item;
 
-public class AddItemRequest : ApiRequest
+public class EditItemRequest : ApiRequest
 {
+    public int Id { get; set; }
     public string? Name { get; set; }
     public string? EnName { get; set; }
     public int CategoryId { get; set; }

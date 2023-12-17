@@ -89,7 +89,7 @@ public abstract class BaseService<TEntity, TKey>
 
         if (typeof(TEntity).GetInterfaces().Contains(typeof(ISoftDeleteEnabled)))
         {
-            query = (DbSet<TEntity>)query.Where(x => ((ISoftDeleteEnabled)x).IsDeleted == false);
+            query = query.Where(x => ((ISoftDeleteEnabled)x).IsDeleted == false);
         }
 
         query = pagination.SortOrder == SortOrder.Ascending ?
@@ -149,7 +149,7 @@ public abstract class BaseService<TEntity, TKey>
 
     public Task<TEntity?> GetByIdAsync(TKey key, bool noTracking = false)
     {
-        var query = _dbSet;
+        var query = _dbSet.AsQueryable();
 
         if (noTracking)
         {
@@ -158,7 +158,7 @@ public abstract class BaseService<TEntity, TKey>
 
         if (typeof(TEntity).GetInterfaces().Contains(typeof(ISoftDeleteEnabled)))
         {
-            query = (DbSet<TEntity>)query.Where(x => ((ISoftDeleteEnabled)x).IsDeleted == false);
+            query = query.Where(x => ((ISoftDeleteEnabled)x).IsDeleted == false);
         }
 
         return query.SingleOrDefaultAsync(x => x.Id!.Equals(key));

@@ -3,34 +3,34 @@ using Microsoft.AspNetCore.Mvc;
 using OnlineStore.Entities.Entities;
 using OnlineStore.Service;
 using OnlineStore.Web.Api.Models;
-using OnlineStore.Web.Api.Models.Item;
+using OnlineStore.Web.Api.Models.Category;
 using Serilog;
 
 namespace OnlineStore.Web.Api.Controllers;
 
-[Route("api/item")]
-public class ItemController : BaseApiController
+[Route("api/category")]
+public class CategoryController : BaseApiController
 {
     private readonly StoreServices _storeServices;
 
-    public ItemController(StoreServices storeServices)
+    public CategoryController(StoreServices storeServices)
     {
         _storeServices = storeServices;
     }
 
     [HttpGet]
     [AllowAnonymous]
-    public async Task<IActionResult> GetItems([FromQuery] GetItemsRequest request)
+    public async Task<IActionResult> GetCategories([FromQuery] GetCategoriesRequest request)
     {
-        var response = new ApiResponse<List<ItemResponse>>();
+        var response = new ApiResponse<List<CategoryResponse>>();
 
         try
         {
-            var products = await _storeServices.ItemService.GetPagedAsync(
+            var products = await _storeServices.CategoryService.GetPagedAsync(
                 x => true, request, true);
 
-            response.Data = new List<ItemResponse>();
-            response.Data.AddRange(products.Select(x => new ItemResponse(x)));
+            response.Data = new List<CategoryResponse>();
+            response.Data.AddRange(products.Select(x => new CategoryResponse(x)));
 
             return Ok(response);
         }
@@ -48,29 +48,23 @@ public class ItemController : BaseApiController
 
     [HttpPost]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> AddItem([FromBody] AddItemRequest request)
+    public async Task<IActionResult> AddCategory([FromBody] AddCategoryRequest request)
     {
         var response = new ApiResponse();
 
         try
         {
-            var item = new Item()
+            var category = new Category()
             {
                 Name = request.Name,
                 EnName = request.EnName,
-                CategoryId = request.CategoryId,
-                Description = request.Description,
-                Price = request.Price,
-                ImageFile = request.ImageFile,
-                IsActive = request.IsActive,
                 UserId = UserId.Value,
                 EntryDate = DateTime.UtcNow,
                 IsDeleted = false,
             };
 
-            _storeServices.ItemService.Add(item);
-            await _storeServices.ItemService.SaveChangesAsync();
-
+            _storeServices.CategoryService.Add(category);
+            await _storeServices.CategoryService.SaveChangesAsync();
             return Ok(response);
         }
         catch (Exception ex)
@@ -87,29 +81,23 @@ public class ItemController : BaseApiController
 
     [HttpPut]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> EditItem([FromBody] EditItemRequest request)
+    public async Task<IActionResult> EditCategory([FromBody] EditCategoryRequest request)
     {
         var response = new ApiResponse();
 
         try
         {
-            var item = await _storeServices.ItemService.GetByIdAsync(request.Id);
+            var category = await _storeServices.CategoryService.GetByIdAsync(request.Id);
 
-            if (item == null)
+            if (category == null)
             {
                 return NotFound();
             }
 
-            item.Name = request.Name;
-            item.EnName = request.EnName;
-            item.CategoryId = request.CategoryId;
-            item.Description = request.Description;
-            item.Price = request.Price;
-            item.ImageFile = request.ImageFile;
-            item.IsActive = request.IsActive;
+            category.Name = request.Name;
+            category.EnName = request.EnName;
 
-            await _storeServices.ItemService.SaveChangesAsync();
-
+            await _storeServices.CategoryService.SaveChangesAsync();
             return Ok(response);
         }
         catch (Exception ex)
@@ -126,22 +114,21 @@ public class ItemController : BaseApiController
 
     [HttpDelete]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> DeleteItem([FromBody] DeleteItemRequest request)
+    public async Task<IActionResult> DeleteCategory([FromQuery] DeleteCategoryRequest request)
     {
         var response = new ApiResponse();
 
         try
         {
-            var item = await _storeServices.ItemService.GetByIdAsync(request.Id);
+            var category = await _storeServices.CategoryService.GetByIdAsync(request.Id);
 
-            if (item == null)
+            if (category == null)
             {
                 return NotFound();
             }
 
-            _storeServices.ItemService.Delete(item);
-            await _storeServices.ItemService.SaveChangesAsync();
-
+            _storeServices.CategoryService.Delete(category);
+            await _storeServices.CategoryService.SaveChangesAsync();
             return Ok(response);
         }
         catch (Exception ex)

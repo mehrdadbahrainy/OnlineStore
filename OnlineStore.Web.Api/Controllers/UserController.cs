@@ -6,6 +6,7 @@ using OnlineStore.Web.Api.Models;
 using OnlineStore.Web.Api.Models.Role;
 using OnlineStore.Web.Api.Models.user;
 using OnlineStore.Web.Api.Models.User;
+using OnlineStore.Web.Api.Security;
 
 namespace OnlineStore.Web.Api.Controllers
 {
@@ -71,7 +72,9 @@ namespace OnlineStore.Web.Api.Controllers
                         x => userRoles.Select(ur => ur.RoleId).Contains(x.Id));
 
                     var token = _authentication.GenerateJwtAuthentication(
-                        user.Username!, roles.Select(x => x.EnName));
+                        user.Id,
+                        user.Username!,
+                        roles.Select(x => x.EnName));
 
 
                     LoginResponse loginResponse = new()
