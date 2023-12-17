@@ -26,15 +26,50 @@ public abstract class BaseService<TEntity, TKey>
         _dbSet = dataContext.Set<TEntity>();
     }
 
+    public Task<bool> AnyAsync(Expression<Func<TEntity, bool>> expression)
+    {
+        var query = _dbSet.Where(expression);
+
+        if (typeof(TEntity).GetInterfaces().Contains(typeof(ISoftDeleteEnabled)))
+        {
+            query = query.Where(x => ((ISoftDeleteEnabled)x).IsDeleted == false);
+        }
+
+        return query.AnyAsync();
+    }
+
     public Task<List<TEntity>> GetAllAsync(
-        Expression<Func<TEntity, bool>> expression,
         bool noTracking = false)
     {
-        var query = _dbSet;
+        var query = _dbSet.AsQueryable();
 
         if (noTracking)
         {
             query.AsNoTracking();
+        }
+
+        if (typeof(TEntity).GetInterfaces().Contains(typeof(ISoftDeleteEnabled)))
+        {
+            query = query.Where(x => ((ISoftDeleteEnabled)x).IsDeleted == false);
+        }
+
+        return query.ToListAsync();
+    }
+
+    public Task<List<TEntity>> GetAllAsync(
+        Expression<Func<TEntity, bool>> expression,
+        bool noTracking = false)
+    {
+        var query = _dbSet.AsQueryable();
+
+        if (noTracking)
+        {
+            query.AsNoTracking();
+        }
+
+        if (typeof(TEntity).GetInterfaces().Contains(typeof(ISoftDeleteEnabled)))
+        {
+            query = query.Where(x => ((ISoftDeleteEnabled)x).IsDeleted == false);
         }
 
         return query.Where(expression).ToListAsync();
@@ -52,6 +87,37 @@ public abstract class BaseService<TEntity, TKey>
             query.AsNoTracking();
         }
 
+        if (typeof(TEntity).GetInterfaces().Contains(typeof(ISoftDeleteEnabled)))
+        {
+            query = (DbSet<TEntity>)query.Where(x => ((ISoftDeleteEnabled)x).IsDeleted == false);
+        }
+
+        query = pagination.SortOrder == SortOrder.Ascending ?
+            query.OrderBy(x => x.Id) :
+            query.OrderByDescending(x => x.Id);
+
+
+        return query.Skip(pagination.PageSize * pagination.PageIndex)
+            .Take(pagination.PageSize)
+            .ToListAsync();
+    }
+
+    public Task<List<TEntity>> GetPagedAsync(
+        Pagination pagination,
+        bool noTracking = false)
+    {
+        var query = _dbSet.AsQueryable();
+
+        if (noTracking)
+        {
+            query.AsNoTracking();
+        }
+
+        if (typeof(TEntity).GetInterfaces().Contains(typeof(ISoftDeleteEnabled)))
+        {
+            query = query.Where(x => ((ISoftDeleteEnabled)x).IsDeleted == false);
+        }
+
         query = pagination.SortOrder == SortOrder.Ascending ?
             query.OrderBy(x => x.Id) :
             query.OrderByDescending(x => x.Id);
@@ -66,11 +132,16 @@ public abstract class BaseService<TEntity, TKey>
         Expression<Func<TEntity, bool>> expression,
         bool noTracking = false)
     {
-        var query = _dbSet;
+        var query = _dbSet.AsQueryable();
 
         if (noTracking)
         {
             query.AsNoTracking();
+        }
+
+        if (typeof(TEntity).GetInterfaces().Contains(typeof(ISoftDeleteEnabled)))
+        {
+            query = query.Where(x => ((ISoftDeleteEnabled)x).IsDeleted == false);
         }
 
         return query.SingleOrDefaultAsync(expression);
@@ -85,6 +156,11 @@ public abstract class BaseService<TEntity, TKey>
             query.AsNoTracking();
         }
 
+        if (typeof(TEntity).GetInterfaces().Contains(typeof(ISoftDeleteEnabled)))
+        {
+            query = (DbSet<TEntity>)query.Where(x => ((ISoftDeleteEnabled)x).IsDeleted == false);
+        }
+
         return query.SingleOrDefaultAsync(x => x.Id!.Equals(key));
     }
 
@@ -92,7 +168,6 @@ public abstract class BaseService<TEntity, TKey>
     {
         _dbSet.Add(entity);
     }
-
 
     public void Edit(TEntity entity)
     {
@@ -102,9 +177,9 @@ public abstract class BaseService<TEntity, TKey>
 
     public void Delete(TEntity entity)
     {
-        if (entity is ISoftDeleteEnabledBase)
+        if (entity is ISoftDeleteEnabled)
         {
-            ((ISoftDeleteEnabledBase)entity).IsDeleted = true;
+            ((ISoftDeleteEnabled)entity).IsDeleted = true;
             _dataContext.Entry(entity).State = EntityState.Modified;
         }
         else
@@ -124,7 +199,7 @@ public abstract class BaseService<TEntity, TKey>
         return _dataContext.SaveChanges();
     }
 
-    public Task SaveChangesAsync()
+    public Task<int> SaveChangesAsync()
     {
         return _dataContext.SaveChangesAsync();
     }

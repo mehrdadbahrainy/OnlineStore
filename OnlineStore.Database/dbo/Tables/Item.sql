@@ -2,6 +2,7 @@
 (
 	[Id]                INT             NOT NULL IDENTITY(1000,1), 
     [Name]              NVARCHAR(50)    NOT NULL, 
+    [EnName]            VARCHAR(50)     NOT NULL, 
     [CategoryId]        INT             NOT NULL, 
     [Description]       NVARCHAR(MAX)   NULL, 
     [Price]             DECIMAL(18, 2)  NULL, 

@@ -14,7 +14,7 @@ public class Authentication
         _configuration = configuration;
     }
 
-    public string GenerateJwtAuthentication(string userName, string role)
+    public string GenerateJwtAuthentication(string userName, IEnumerable<string?> roles)
     {
         var claims = new List<Claim>
         {
@@ -23,7 +23,10 @@ public class Authentication
             new Claim(ClaimTypes.NameIdentifier, userName)
         };
 
-        claims.Add(new Claim(ClaimTypes.Role, role));
+        foreach (var role in roles)
+        {
+            claims.Add(new Claim(ClaimTypes.Role, role!));
+        }
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:JwtKey"] ?? string.Empty));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -39,7 +42,6 @@ public class Authentication
         );
 
         return new JwtSecurityTokenHandler().WriteToken(token);
-
     }
 
 

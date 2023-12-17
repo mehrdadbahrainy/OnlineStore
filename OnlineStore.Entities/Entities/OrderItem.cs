@@ -1,6 +1,6 @@
 ﻿namespace OnlineStore.Entities.Entities;
 
-public class OrderItem : IBaseEntity, ISoftDeleteEnabledBase
+public class OrderItem : IBaseEntity, ISoftDeleteEnabled
 {
     public int Id { get; set; }
     public int OrderId { get; set; }
