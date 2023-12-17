@@ -1,6 +1,6 @@
 ﻿namespace OnlineStore.Entities.Entities;
 
-public interface ISoftDeleteEnabledBase
+public interface ISoftDeleteEnabled
 {
     public bool IsDeleted { get; set; }
 }

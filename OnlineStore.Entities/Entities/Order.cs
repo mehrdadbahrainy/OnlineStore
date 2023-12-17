@@ -2,7 +2,7 @@
 
 namespace OnlineStore.Entities.Entities;
 
-public class Order : IBaseEntity, ISoftDeleteEnabledBase
+public class Order : IBaseEntity, ISoftDeleteEnabled
 {
     public int Id { get; set; }
     public int UserId { get; set; }

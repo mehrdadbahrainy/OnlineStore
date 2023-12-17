@@ -13,7 +13,9 @@ namespace OnlineStore.DataAccess
         public DbSet<Item> Item { get; set; }
         public DbSet<Order> Order { get; set; }
         public DbSet<OrderItem> OrderItem { get; set; }
+        public DbSet<Role> Role { get; set; }
         public DbSet<User> User { get; set; }
+        public DbSet<UserRole> UserRole { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -30,8 +32,14 @@ namespace OnlineStore.DataAccess
             modelBuilder.Entity<OrderItem>()
                 .ToTable("OrderItem");
 
+            modelBuilder.Entity<Role>()
+                .ToTable("Role");
+
             modelBuilder.Entity<User>()
                 .ToTable("User");
+
+            modelBuilder.Entity<UserRole>()
+                .ToTable("UserRole");
 
         }
     }

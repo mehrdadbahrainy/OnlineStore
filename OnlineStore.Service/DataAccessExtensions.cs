@@ -9,6 +9,10 @@ public static class DataAccessExtensions
         service.AddScoped<CategoryService>();
         service.AddScoped<ItemService>();
         service.AddScoped<OrderService>();
+        service.AddScoped<RoleService>();
         service.AddScoped<UserService>();
+        service.AddScoped<UserRoleService>();
+
+        service.AddScoped<StoreServices>();
     }
 }
