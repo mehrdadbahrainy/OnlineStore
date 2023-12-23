@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using OnlineStore.DataAccess.Mapping;
 using OnlineStore.Entities.Entities;
 
 namespace OnlineStore.DataAccess
@@ -11,6 +12,7 @@ namespace OnlineStore.DataAccess
 
         public DbSet<Category> Category { get; set; }
         public DbSet<Item> Item { get; set; }
+        public DbSet<ItemCategory> ItemCategory { get; set; }
         public DbSet<Order> Order { get; set; }
         public DbSet<OrderItem> OrderItem { get; set; }
         public DbSet<Role> Role { get; set; }
@@ -19,27 +21,14 @@ namespace OnlineStore.DataAccess
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-
-            modelBuilder.Entity<Category>()
-                .ToTable("Category");
-
-            modelBuilder.Entity<Item>()
-                .ToTable("Item");
-
-            modelBuilder.Entity<Order>()
-                .ToTable("Order");
-
-            modelBuilder.Entity<OrderItem>()
-                .ToTable("OrderItem");
-
-            modelBuilder.Entity<Role>()
-                .ToTable("Role");
-
-            modelBuilder.Entity<User>()
-                .ToTable("User");
-
-            modelBuilder.Entity<UserRole>()
-                .ToTable("UserRole");
+            modelBuilder.ApplyConfiguration(new CategoryMap());
+            modelBuilder.ApplyConfiguration(new ItemMap());
+            modelBuilder.ApplyConfiguration(new ItemCategoryMap());
+            modelBuilder.ApplyConfiguration(new OrderItemMap());
+            modelBuilder.ApplyConfiguration(new OrderMap());
+            modelBuilder.ApplyConfiguration(new RoleMap());
+            modelBuilder.ApplyConfiguration(new UserMap());
+            modelBuilder.ApplyConfiguration(new UserRoleMap());
 
         }
     }

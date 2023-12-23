@@ -7,7 +7,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectVersion>4.1</ProjectVersion>
     <ProjectGuid>{85be252c-95d8-4e70-b787-117458b6f372}</ProjectGuid>
-    <DSP>Microsoft.Data.Tools.Schema.Sql.Sql160DatabaseSchemaProvider</DSP>
+    <DSP>Microsoft.Data.Tools.Schema.Sql.Sql150DatabaseSchemaProvider</DSP>
     <OutputType>Database</OutputType>
     <RootPath>
     </RootPath>
@@ -22,6 +22,7 @@
     <SqlServerVerification>False</SqlServerVerification>
     <IncludeCompositeObjects>True</IncludeCompositeObjects>
     <TargetDatabaseSet>True</TargetDatabaseSet>
+    <GenerateCreateScript>False</GenerateCreateScript>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>bin\Release\</OutputPath>
@@ -69,6 +70,7 @@
     <Build Include="dbo\Tables\OrderItem.sql" />
     <Build Include="dbo\Tables\Role.sql" />
     <Build Include="dbo\Tables\UserRole.sql" />
+    <Build Include="dbo\Tables\ItemCategory.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="OnlineStore.Database.refactorlog" />

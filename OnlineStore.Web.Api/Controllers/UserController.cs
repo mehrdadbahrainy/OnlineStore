@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using OnlineStore.Entities.Entities;
 using OnlineStore.Service;
 using OnlineStore.Web.Api.Models;
-using OnlineStore.Web.Api.Models.Role;
 using OnlineStore.Web.Api.Models.user;
 using OnlineStore.Web.Api.Models.User;
 using OnlineStore.Web.Api.Security;

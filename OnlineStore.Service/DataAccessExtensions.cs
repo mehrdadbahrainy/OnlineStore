@@ -8,6 +8,7 @@ public static class DataAccessExtensions
     {
         service.AddScoped<CategoryService>();
         service.AddScoped<ItemService>();
+        service.AddScoped<ItemCategoryService>();
         service.AddScoped<OrderService>();
         service.AddScoped<RoleService>();
         service.AddScoped<UserService>();

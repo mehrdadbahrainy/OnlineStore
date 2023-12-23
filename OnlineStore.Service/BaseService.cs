@@ -58,7 +58,8 @@ public abstract class BaseService<TEntity, TKey>
 
     public Task<List<TEntity>> GetAllAsync(
         Expression<Func<TEntity, bool>> expression,
-        bool noTracking = false)
+        bool noTracking = false,
+        params Expression<Func<TEntity, object>>[]? includePaths)
     {
         var query = _dbSet.AsQueryable();
 
@@ -72,13 +73,22 @@ public abstract class BaseService<TEntity, TKey>
             query = query.Where(x => ((ISoftDeleteEnabled)x).IsDeleted == false);
         }
 
+        if (includePaths != null)
+        {
+            foreach (var includePath in includePaths)
+            {
+                query = query.Include(includePath);
+            }
+        }
+
         return query.Where(expression).ToListAsync();
     }
 
     public Task<List<TEntity>> GetPagedAsync(
         Expression<Func<TEntity, bool>> expression,
         Pagination pagination,
-        bool noTracking = false)
+        bool noTracking = false,
+        params Expression<Func<TEntity, object>>[]? includePaths)
     {
         var query = _dbSet.Where(expression);
 
@@ -90,6 +100,14 @@ public abstract class BaseService<TEntity, TKey>
         if (typeof(TEntity).GetInterfaces().Contains(typeof(ISoftDeleteEnabled)))
         {
             query = query.Where(x => ((ISoftDeleteEnabled)x).IsDeleted == false);
+        }
+
+        if (includePaths != null)
+        {
+            foreach (var includePath in includePaths)
+            {
+                query = query.Include(includePath);
+            }
         }
 
         query = pagination.SortOrder == SortOrder.Ascending ?
@@ -104,7 +122,8 @@ public abstract class BaseService<TEntity, TKey>
 
     public Task<List<TEntity>> GetPagedAsync(
         Pagination pagination,
-        bool noTracking = false)
+        bool noTracking = false,
+        params Expression<Func<TEntity, object>>[]? includePaths)
     {
         var query = _dbSet.AsQueryable();
 
@@ -116,6 +135,14 @@ public abstract class BaseService<TEntity, TKey>
         if (typeof(TEntity).GetInterfaces().Contains(typeof(ISoftDeleteEnabled)))
         {
             query = query.Where(x => ((ISoftDeleteEnabled)x).IsDeleted == false);
+        }
+
+        if (includePaths != null)
+        {
+            foreach (var includePath in includePaths)
+            {
+                query = query.Include(includePath);
+            }
         }
 
         query = pagination.SortOrder == SortOrder.Ascending ?
@@ -130,7 +157,8 @@ public abstract class BaseService<TEntity, TKey>
 
     public Task<TEntity?> GetSingleAsync(
         Expression<Func<TEntity, bool>> expression,
-        bool noTracking = false)
+        bool noTracking = false,
+        params Expression<Func<TEntity, object>>[]? includePaths)
     {
         var query = _dbSet.AsQueryable();
 
@@ -142,12 +170,22 @@ public abstract class BaseService<TEntity, TKey>
         if (typeof(TEntity).GetInterfaces().Contains(typeof(ISoftDeleteEnabled)))
         {
             query = query.Where(x => ((ISoftDeleteEnabled)x).IsDeleted == false);
+        }
+
+        if (includePaths != null)
+        {
+            foreach (var includePath in includePaths)
+            {
+                query = query.Include(includePath);
+            }
         }
 
         return query.SingleOrDefaultAsync(expression);
     }
 
-    public Task<TEntity?> GetByIdAsync(TKey key, bool noTracking = false)
+    public Task<TEntity?> GetByIdAsync(TKey key,
+        bool noTracking = false,
+        params Expression<Func<TEntity, object>>[]? includePaths)
     {
         var query = _dbSet.AsQueryable();
 
@@ -159,6 +197,14 @@ public abstract class BaseService<TEntity, TKey>
         if (typeof(TEntity).GetInterfaces().Contains(typeof(ISoftDeleteEnabled)))
         {
             query = query.Where(x => ((ISoftDeleteEnabled)x).IsDeleted == false);
+        }
+
+        if (includePaths != null)
+        {
+            foreach (var includePath in includePaths)
+            {
+                query = query.Include(includePath);
+            }
         }
 
         return query.SingleOrDefaultAsync(x => x.Id!.Equals(key));

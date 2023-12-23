@@ -13,7 +13,7 @@ public abstract class BaseApiController : ControllerBase
     {
         Log.Logger = new LoggerConfiguration()
             .WriteTo.Console()
-            .WriteTo.File("log.txt",
+            .WriteTo.File("_log_.log",
                 rollingInterval: RollingInterval.Day,
                 rollOnFileSizeLimit: true)
             .CreateLogger();
