@@ -4,6 +4,7 @@ public class StoreServices
 {
     public CategoryService CategoryService { get; }
     public ItemService ItemService { get; }
+    public ItemCategoryService ItemCategoryService { get; }
     public OrderService OrderService { get; }
     public RoleService RoleService { get; }
     public UserService UserService { get; }
@@ -12,6 +13,7 @@ public class StoreServices
     public StoreServices(
         CategoryService categoryService,
         ItemService itemService,
+        ItemCategoryService itemCategoryService,
         OrderService orderService,
         RoleService roleService,
         UserService userService,
@@ -19,6 +21,7 @@ public class StoreServices
     {
         CategoryService = categoryService;
         ItemService = itemService;
+        ItemCategoryService = itemCategoryService;
         OrderService = orderService;
         RoleService = roleService;
         UserService = userService;

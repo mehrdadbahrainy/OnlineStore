@@ -13,4 +13,7 @@ public class Item : IBaseEntity, ISoftDeleteEnabled
     public DateTime EntryDate { get; set; }
     public bool IsActive { get; set; }
     public bool IsDeleted { get; set; }
+
+    public Category MainCategory { get; set; }
+    public ICollection<Category> Categories { get; set; }
 }

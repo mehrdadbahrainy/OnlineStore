@@ -9,4 +9,7 @@ public class Category : IBaseEntity, ISoftDeleteEnabled
     public DateTime EntryDate { get; set; }
     public bool IsActive { get; set; }
     public bool IsDeleted { get; set; }
+
+    public ICollection<Item> MainItems { get; set; }
+    public ICollection<Item> Items { get; set; }
 }

@@ -3,7 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 
-namespace OnlineStore.Web.Api.Controllers;
+namespace OnlineStore.Web.Api.Security;
 
 public class Authentication
 {
@@ -14,10 +14,11 @@ public class Authentication
         _configuration = configuration;
     }
 
-    public string GenerateJwtAuthentication(string userName, IEnumerable<string?> roles)
+    public string GenerateJwtAuthentication(int userId, string userName, IEnumerable<string?> roles)
     {
         var claims = new List<Claim>
         {
+            new Claim("UserId", userId.ToString()),
             new Claim(JwtHeaderParameterNames.Jku, userName),
             new Claim(JwtHeaderParameterNames.Kid, Guid.NewGuid().ToString()),
             new Claim(ClaimTypes.NameIdentifier, userName)
@@ -30,8 +31,7 @@ public class Authentication
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:JwtKey"] ?? string.Empty));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        var expires =
-            DateTime.Now.AddDays(Convert.ToDouble(_configuration["Jwt:JwtExpireDays"]));
+        var expires = DateTime.Now.AddDays(Convert.ToDouble(_configuration["Jwt:JwtExpireDays"]));
 
         var token = new JwtSecurityToken(
                 _configuration["Jwt:JwtIssuer"],
@@ -43,8 +43,7 @@ public class Authentication
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
-
-
+    
     public string ValidateToken(string token)
     {
         if (token == null)
@@ -76,5 +75,4 @@ public class Authentication
             return null;
         }
     }
-
 }

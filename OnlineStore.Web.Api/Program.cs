@@ -5,7 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using OnlineStore.DataAccess;
 using OnlineStore.Service;
-using OnlineStore.Web.Api.Controllers;
+using OnlineStore.Web.Api.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 string _allowSpecificOrigins = "_allowSpecificOrigins";

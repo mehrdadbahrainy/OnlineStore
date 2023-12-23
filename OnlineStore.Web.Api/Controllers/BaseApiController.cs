@@ -13,9 +13,23 @@ public abstract class BaseApiController : ControllerBase
     {
         Log.Logger = new LoggerConfiguration()
             .WriteTo.Console()
-            .WriteTo.File("log.txt",
+            .WriteTo.File("_log_.log",
                 rollingInterval: RollingInterval.Day,
                 rollOnFileSizeLimit: true)
             .CreateLogger();
+    }
+
+    public int? UserId
+    {
+        get
+        {
+            var userIdentity = this.User.Identity;
+            if (userIdentity is { IsAuthenticated: true })
+            {
+                return int.Parse(this.User.Claims.First(i => i.Type == "UserId").Value);
+            }
+
+            return null;
+        }
     }
 }
