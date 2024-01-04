@@ -4,7 +4,6 @@ using OnlineStore.Entities.Entities;
 using OnlineStore.Service;
 using OnlineStore.Web.Api.Models;
 using OnlineStore.Web.Api.Models.Category;
-using Serilog;
 
 namespace OnlineStore.Web.Api.Controllers;
 
@@ -24,26 +23,13 @@ public class CategoryController : BaseApiController
     {
         var response = new ApiResponse<List<CategoryResponse>>();
 
-        try
-        {
-            var products = await _storeServices.CategoryService.GetPagedAsync(
-                x => true, request, true);
+        var products = await _storeServices.CategoryService.GetPagedAsync(
+            x => true, request, true);
 
-            response.Data = new List<CategoryResponse>();
-            response.Data.AddRange(products.Select(x => new CategoryResponse(x)));
+        response.Data = new List<CategoryResponse>();
+        response.Data.AddRange(products.Select(x => new CategoryResponse(x)));
 
-            return Ok(response);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex);
-            Log.Error(ex, "Unhandled Exception");
-            return StatusCode(500, response);
-        }
-        finally
-        {
-            await Log.CloseAndFlushAsync();
-        }
+        return Ok(response);
     }
 
     [HttpPost]
@@ -52,31 +38,18 @@ public class CategoryController : BaseApiController
     {
         var response = new ApiResponse();
 
-        try
+        var category = new Category()
         {
-            var category = new Category()
-            {
-                Name = request.Name,
-                EnName = request.EnName,
-                UserId = UserId.Value,
-                EntryDate = DateTime.UtcNow,
-                IsDeleted = false,
-            };
+            Name = request.Name,
+            EnName = request.EnName,
+            UserId = UserId.Value,
+            EntryDate = DateTime.UtcNow,
+            IsDeleted = false,
+        };
 
-            _storeServices.CategoryService.Add(category);
-            await _storeServices.CategoryService.SaveChangesAsync();
-            return Ok(response);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex);
-            Log.Error(ex, "Unhandled Exception");
-            return StatusCode(500, response);
-        }
-        finally
-        {
-            await Log.CloseAndFlushAsync();
-        }
+        _storeServices.CategoryService.Add(category);
+        await _storeServices.CategoryService.SaveChangesAsync();
+        return Ok(response);
     }
 
     [HttpPut]
@@ -85,31 +58,18 @@ public class CategoryController : BaseApiController
     {
         var response = new ApiResponse();
 
-        try
-        {
-            var category = await _storeServices.CategoryService.GetByIdAsync(request.Id);
+        var category = await _storeServices.CategoryService.GetByIdAsync(request.Id);
 
-            if (category == null)
-            {
-                return NotFound();
-            }
-
-            category.Name = request.Name;
-            category.EnName = request.EnName;
-
-            await _storeServices.CategoryService.SaveChangesAsync();
-            return Ok(response);
-        }
-        catch (Exception ex)
+        if (category == null)
         {
-            Console.WriteLine(ex);
-            Log.Error(ex, "Unhandled Exception");
-            return StatusCode(500, response);
+            return NotFound();
         }
-        finally
-        {
-            await Log.CloseAndFlushAsync();
-        }
+
+        category.Name = request.Name;
+        category.EnName = request.EnName;
+
+        await _storeServices.CategoryService.SaveChangesAsync();
+        return Ok(response);
     }
 
     [HttpDelete]
@@ -118,28 +78,15 @@ public class CategoryController : BaseApiController
     {
         var response = new ApiResponse();
 
-        try
-        {
-            var category = await _storeServices.CategoryService.GetByIdAsync(request.Id);
+        var category = await _storeServices.CategoryService.GetByIdAsync(request.Id);
 
-            if (category == null)
-            {
-                return NotFound();
-            }
+        if (category == null)
+        {
+            return NotFound();
+        }
 
-            _storeServices.CategoryService.Delete(category);
-            await _storeServices.CategoryService.SaveChangesAsync();
-            return Ok(response);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex);
-            Log.Error(ex, "Unhandled Exception");
-            return StatusCode(500, response);
-        }
-        finally
-        {
-            await Log.CloseAndFlushAsync();
-        }
+        _storeServices.CategoryService.Delete(category);
+        await _storeServices.CategoryService.SaveChangesAsync();
+        return Ok(response);
     }
 }

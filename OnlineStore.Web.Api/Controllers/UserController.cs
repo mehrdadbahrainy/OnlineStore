@@ -28,20 +28,12 @@ namespace OnlineStore.Web.Api.Controllers
         {
             var response = new ApiResponse<List<UserResponse>>();
 
-            try
-            {
-                var users = await _storeServices.UserService.GetPagedAsync(request, true);
-                var userResponse = new List<UserResponse>();
-                userResponse.AddRange(users.Select(x => new UserResponse(x)));
+            var users = await _storeServices.UserService.GetPagedAsync(request, true);
+            var userResponse = new List<UserResponse>();
+            userResponse.AddRange(users.Select(x => new UserResponse(x)));
 
-                response.Data = userResponse;
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                return StatusCode(500);
-            }
+            response.Data = userResponse;
+            return Ok(response);
         }
 
         [HttpPost("login")]
@@ -50,124 +42,107 @@ namespace OnlineStore.Web.Api.Controllers
         {
             var response = new ApiResponse<LoginResponse>();
 
-            try
+            var user = await _storeServices.UserService.GetSingleAsync(
+                x => x.Username == request.Username);
+
+            if (user == null)
             {
-                var user = await _storeServices.UserService.GetSingleAsync(
-                    x => x.Username == request.Username);
-
-                if (user == null)
-                {
-                    return Unauthorized();
-                }
-
-                var password = Utils.Encryption.GetMd5Hash($"{request.Password}_{user.PasswordSalt}");
-
-                if (password.Equals(user.Password))
-                {
-                    var userRoles = await _storeServices.UserRoleService.GetAllAsync(
-                        x => x.UserId == user.Id);
-
-                    var roles = await _storeServices.RoleService.GetAllAsync(
-                        x => userRoles.Select(ur => ur.RoleId).Contains(x.Id));
-
-                    var token = _authentication.GenerateJwtAuthentication(
-                        user.Id,
-                        user.Username!,
-                        roles.Select(x => x.EnName));
-
-
-                    LoginResponse loginResponse = new()
-                    {
-                        FirstName = user.FirstName,
-                        LastName = user.LastName,
-                        Token = token,
-                    };
-
-                    response.Data = loginResponse;
-                    return Ok(response);
-                }
-
                 return Unauthorized();
             }
-            catch (Exception ex)
+
+            var password = Utils.Encryption.GetMd5Hash($"{request.Password}_{user.PasswordSalt}");
+
+            if (password.Equals(user.Password))
             {
-                Console.WriteLine(ex);
-                return StatusCode(500);
+                var userRoles = await _storeServices.UserRoleService.GetAllAsync(
+                    x => x.UserId == user.Id);
+
+                var roles = await _storeServices.RoleService.GetAllAsync(
+                    x => userRoles.Select(ur => ur.RoleId).Contains(x.Id));
+
+                var token = _authentication.GenerateJwtAuthentication(
+                    user.Id,
+                    user.Username!,
+                    roles.Select(x => x.EnName));
+
+
+                LoginResponse loginResponse = new()
+                {
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    Token = token,
+                };
+
+                response.Data = loginResponse;
+                return Ok(response);
             }
+
+            return Unauthorized();
         }
 
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
         {
-            try
+            var user = await _storeServices.UserService.GetSingleAsync(
+                x => x.Username == request.Username);
+
+            if (user == null)
             {
-                var user = await _storeServices.UserService.GetSingleAsync(
-                    x => x.Username == request.Username);
-
-                if (user == null)
-                {
-                    return Unauthorized();
-                }
-
-                var password = Utils.Encryption.GetMd5Hash($"{request.OldPassword}_{user.PasswordSalt}");
-
-                if (password.Equals(user.Password))
-                {
-
-                    var passwordSalt = Guid.NewGuid().ToString();
-                    password = Utils.Encryption.GetMd5Hash($"{request.NewPassword}_{passwordSalt}");
-
-                    user.PasswordSalt = passwordSalt;
-                    user.Password = password;
-
-                    _storeServices.UserService.Edit(user);
-                    await _storeServices.UserService.SaveChangesAsync();
-
-                    return Ok();
-                }
-
                 return Unauthorized();
             }
-            catch (Exception ex)
+
+            var password = Utils.Encryption.GetMd5Hash($"{request.OldPassword}_{user.PasswordSalt}");
+
+            if (password.Equals(user.Password))
             {
-                Console.WriteLine(ex);
-                return StatusCode(500);
+
+                var passwordSalt = Guid.NewGuid().ToString();
+                password = Utils.Encryption.GetMd5Hash($"{request.NewPassword}_{passwordSalt}");
+
+                user.PasswordSalt = passwordSalt;
+                user.Password = password;
+
+                _storeServices.UserService.Edit(user);
+                await _storeServices.UserService.SaveChangesAsync();
+
+                return Ok();
             }
+
+            return Unauthorized();
         }
 
         [HttpPost("register")]
         [AllowAnonymous]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
-            try
+            var passwordSalt = Guid.NewGuid().ToString();
+            var password = Utils.Encryption.GetMd5Hash($"{request.Password}_{passwordSalt}");
+
+            var user = new User()
             {
-                var passwordSalt = Guid.NewGuid().ToString();
-                var password = Utils.Encryption.GetMd5Hash($"{request.Password}_{passwordSalt}");
+                Username = request.Username,
+                FirstName = request.FirstName,
+                LastName = request.LastName,
+                Email = request.Email,
+                BirthDate = request.BirthDate,
+                Password = password,
+                PasswordSalt = passwordSalt,
+                IsActive = true,
+                EntryDate = DateTime.UtcNow,
+                IsDeleted = false,
+            };
 
-                var user = new User()
-                {
-                    Username = request.Username,
-                    FirstName = request.FirstName,
-                    LastName = request.LastName,
-                    Email = request.Email,
-                    BirthDate = request.BirthDate,
-                    Password = password,
-                    PasswordSalt = passwordSalt,
-                    IsActive = true,
-                    EntryDate = DateTime.UtcNow,
-                    IsDeleted = false,
-                };
+            _storeServices.UserService.Add(user);
+            await _storeServices.UserService.SaveChangesAsync();
 
-                _storeServices.UserService.Add(user);
-                await _storeServices.UserService.SaveChangesAsync();
+            return Ok();
+        }
 
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                return StatusCode(500);
-            }
+        [HttpGet("error")]
+        [AllowAnonymous]
+        public async Task<IActionResult> error()
+        {
+            throw new Exception("Errrrrrror");
         }
     }
 }

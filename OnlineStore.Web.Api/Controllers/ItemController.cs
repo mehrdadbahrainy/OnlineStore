@@ -5,7 +5,6 @@ using OnlineStore.Service;
 using OnlineStore.Web.Api.Models;
 using OnlineStore.Web.Api.Models.Category;
 using OnlineStore.Web.Api.Models.Item;
-using Serilog;
 
 namespace OnlineStore.Web.Api.Controllers;
 
@@ -25,29 +24,16 @@ public class ItemController : BaseApiController
     {
         var response = new ApiResponse<List<ItemResponse>>();
 
-        try
-        {
-            var products = await _storeServices.ItemService.GetPagedAsync(
-                x => true, request,
-                true,
-                x => x.Categories,
-                x => x.MainCategory);
+        var products = await _storeServices.ItemService.GetPagedAsync(
+            x => true, request,
+            true,
+            x => x.Categories,
+            x => x.MainCategory);
 
-            response.Data = new List<ItemResponse>();
-            response.Data.AddRange(products.Select(x => new ItemResponse(x)));
+        response.Data = new List<ItemResponse>();
+        response.Data.AddRange(products.Select(x => new ItemResponse(x)));
 
-            return Ok(response);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex);
-            Log.Error(ex, "Unhandled Exception");
-            return StatusCode(500, response);
-        }
-        finally
-        {
-            await Log.CloseAndFlushAsync();
-        }
+        return Ok(response);
     }
 
     [HttpGet("{itemId}/categiry")]
@@ -56,30 +42,17 @@ public class ItemController : BaseApiController
     {
         var response = new ApiResponse<List<CategoryResponse>>();
 
-        try
-        {
-            var itemCategories = await _storeServices.ItemCategoryService.GetAllAsync(
-                x => x.ItemId == request.ItemId,
-                true,
-                x => x.Category);
+        var itemCategories = await _storeServices.ItemCategoryService.GetAllAsync(
+            x => x.ItemId == request.ItemId,
+            true,
+            x => x.Category);
 
-            var categories = itemCategories.Select(x => x.Category);
+        var categories = itemCategories.Select(x => x.Category);
 
-            response.Data = new List<CategoryResponse>();
-            response.Data.AddRange(categories.Select(x => new CategoryResponse(x)));
+        response.Data = new List<CategoryResponse>();
+        response.Data.AddRange(categories.Select(x => new CategoryResponse(x)));
 
-            return Ok(response);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex);
-            Log.Error(ex, "Unhandled Exception");
-            return StatusCode(500, response);
-        }
-        finally
-        {
-            await Log.CloseAndFlushAsync();
-        }
+        return Ok(response);
     }
 
     [HttpPost]
@@ -88,37 +61,24 @@ public class ItemController : BaseApiController
     {
         var response = new ApiResponse();
 
-        try
+        var item = new Item()
         {
-            var item = new Item()
-            {
-                Name = request.Name,
-                EnName = request.EnName,
-                CategoryId = request.CategoryId,
-                Description = request.Description,
-                Price = request.Price,
-                ImageFile = request.ImageFile,
-                IsActive = request.IsActive,
-                UserId = UserId.Value,
-                EntryDate = DateTime.UtcNow,
-                IsDeleted = false,
-            };
+            Name = request.Name,
+            EnName = request.EnName,
+            CategoryId = request.CategoryId,
+            Description = request.Description,
+            Price = request.Price,
+            ImageFile = request.ImageFile,
+            IsActive = request.IsActive,
+            UserId = UserId.Value,
+            EntryDate = DateTime.UtcNow,
+            IsDeleted = false,
+        };
 
-            _storeServices.ItemService.Add(item);
-            await _storeServices.ItemService.SaveChangesAsync();
+        _storeServices.ItemService.Add(item);
+        await _storeServices.ItemService.SaveChangesAsync();
 
-            return Ok(response);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex);
-            Log.Error(ex, "Unhandled Exception");
-            return StatusCode(500, response);
-        }
-        finally
-        {
-            await Log.CloseAndFlushAsync();
-        }
+        return Ok(response);
     }
 
     [HttpPut]
@@ -127,37 +87,24 @@ public class ItemController : BaseApiController
     {
         var response = new ApiResponse();
 
-        try
+        var item = await _storeServices.ItemService.GetByIdAsync(request.Id);
+
+        if (item == null)
         {
-            var item = await _storeServices.ItemService.GetByIdAsync(request.Id);
-
-            if (item == null)
-            {
-                return NotFound();
-            }
-
-            item.Name = request.Name;
-            item.EnName = request.EnName;
-            item.CategoryId = request.CategoryId;
-            item.Description = request.Description;
-            item.Price = request.Price;
-            item.ImageFile = request.ImageFile;
-            item.IsActive = request.IsActive;
-
-            await _storeServices.ItemService.SaveChangesAsync();
-
-            return Ok(response);
+            return NotFound();
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex);
-            Log.Error(ex, "Unhandled Exception");
-            return StatusCode(500, response);
-        }
-        finally
-        {
-            await Log.CloseAndFlushAsync();
-        }
+
+        item.Name = request.Name;
+        item.EnName = request.EnName;
+        item.CategoryId = request.CategoryId;
+        item.Description = request.Description;
+        item.Price = request.Price;
+        item.ImageFile = request.ImageFile;
+        item.IsActive = request.IsActive;
+
+        await _storeServices.ItemService.SaveChangesAsync();
+
+        return Ok(response);
     }
 
     [HttpDelete]
@@ -166,30 +113,17 @@ public class ItemController : BaseApiController
     {
         var response = new ApiResponse();
 
-        try
-        {
-            var item = await _storeServices.ItemService.GetByIdAsync(request.Id);
+        var item = await _storeServices.ItemService.GetByIdAsync(request.Id);
 
-            if (item == null)
-            {
-                return NotFound();
-            }
-
-            _storeServices.ItemService.Delete(item);
-            await _storeServices.ItemService.SaveChangesAsync();
-
-            return Ok(response);
-        }
-        catch (Exception ex)
+        if (item == null)
         {
-            Console.WriteLine(ex);
-            Log.Error(ex, "Unhandled Exception");
-            return StatusCode(500, response);
+            return NotFound();
         }
-        finally
-        {
-            await Log.CloseAndFlushAsync();
-        }
+
+        _storeServices.ItemService.Delete(item);
+        await _storeServices.ItemService.SaveChangesAsync();
+
+        return Ok(response);
     }
 
     [HttpPost("categories")]
@@ -198,48 +132,35 @@ public class ItemController : BaseApiController
     {
         var response = new ApiResponse();
 
-        try
+        var item = await _storeServices.ItemService.GetByIdAsync(request.ItemId);
+
+        if (item == null)
         {
-            var item = await _storeServices.ItemService.GetByIdAsync(request.ItemId);
+            return NotFound();
+        }
 
-            if (item == null)
+        var categoryIds = request.CategoryIds.Distinct();
+        var categories = await _storeServices.CategoryService.GetAllAsync(
+            x => categoryIds.Contains(x.Id));
+
+        foreach (var category in categories)
+        {
+            var itemCategoryExist = await _storeServices.ItemCategoryService.AnyAsync(x => x.ItemId == item.Id && x.CategoryId == category.Id);
+
+            if (!itemCategoryExist)
             {
-                return NotFound();
-            }
-
-            var categoryIds = request.CategoryIds.Distinct();
-            var categories = await _storeServices.CategoryService.GetAllAsync(
-                x => categoryIds.Contains(x.Id));
-
-            foreach (var category in categories)
-            {
-                var itemCategoryExist = await _storeServices.ItemCategoryService.AnyAsync(x => x.ItemId == item.Id && x.CategoryId == category.Id);
-
-                if (!itemCategoryExist)
+                var itemCategory = new ItemCategory()
                 {
-                    var itemCategory = new ItemCategory()
-                    {
-                        ItemId = item.Id,
-                        CategoryId = category.Id,
-                    };
+                    ItemId = item.Id,
+                    CategoryId = category.Id,
+                };
 
-                    _storeServices.ItemCategoryService.Add(itemCategory);
-                }
+                _storeServices.ItemCategoryService.Add(itemCategory);
             }
+        }
 
-            await _storeServices.ItemCategoryService.SaveChangesAsync();
+        await _storeServices.ItemCategoryService.SaveChangesAsync();
 
-            return Ok(response);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex);
-            Log.Error(ex, "Unhandled Exception");
-            return StatusCode(500, response);
-        }
-        finally
-        {
-            await Log.CloseAndFlushAsync();
-        }
+        return Ok(response);
     }
 }
