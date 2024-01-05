@@ -24,20 +24,12 @@ public class RoleController : BaseApiController
     {
         var response = new ApiResponse<List<RoleResponse>>();
 
-        try
-        {
-            var roles = await _storeServices.RoleService.GetPagedAsync(request, true);
-            var rolesResponse = new List<RoleResponse>();
-            rolesResponse.AddRange(roles.Select(x => new RoleResponse(x)));
+        var roles = await _storeServices.RoleService.GetPagedAsync(request, true);
+        var rolesResponse = new List<RoleResponse>();
+        rolesResponse.AddRange(roles.Select(x => new RoleResponse(x)));
 
-            response.Data = rolesResponse;
-            return Ok(response);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex);
-            return StatusCode(500);
-        }
+        response.Data = rolesResponse;
+        return Ok(response);
     }
 
     [HttpPost]
@@ -45,32 +37,24 @@ public class RoleController : BaseApiController
     {
         var response = new ApiResponse();
 
-        try
+        var role = new Role()
         {
-            var role = new Role()
-            {
-                Name = request.Name,
-                EnName = request.EnName,
-                EntryDate = DateTime.UtcNow,
-                IsDeleted = false,
-            };
+            Name = request.Name,
+            EnName = request.EnName,
+            EntryDate = DateTime.UtcNow,
+            IsDeleted = false,
+        };
 
-            _storeServices.RoleService.Add(role);
-            var inserted = await _storeServices.RoleService.SaveChangesAsync();
+        _storeServices.RoleService.Add(role);
+        var inserted = await _storeServices.RoleService.SaveChangesAsync();
 
-            if (inserted > 0)
-            {
-                return Ok(response);
-            }
-            else
-            {
-                return BadRequest();
-            }
+        if (inserted > 0)
+        {
+            return Ok(response);
         }
-        catch (Exception ex)
+        else
         {
-            Console.WriteLine(ex);
-            return StatusCode(500);
+            return BadRequest();
         }
     }
 
@@ -79,33 +63,25 @@ public class RoleController : BaseApiController
     {
         var response = new ApiResponse();
 
-        try
+        var role = await _storeServices.RoleService.GetByIdAsync(request.Id);
+
+        if (role == null)
         {
-            var role = await _storeServices.RoleService.GetByIdAsync(request.Id);
-
-            if (role == null)
-            {
-                return NotFound();
-            }
-
-            role.Name = request.Name;
-            role.EnName = request.EnName;
-
-            var updated = await _storeServices.RoleService.SaveChangesAsync();
-
-            if (updated > 0)
-            {
-                return Ok(response);
-            }
-            else
-            {
-                return BadRequest();
-            }
+            return NotFound();
         }
-        catch (Exception ex)
+
+        role.Name = request.Name;
+        role.EnName = request.EnName;
+
+        var updated = await _storeServices.RoleService.SaveChangesAsync();
+
+        if (updated > 0)
         {
-            Console.WriteLine(ex);
-            return StatusCode(500);
+            return Ok(response);
+        }
+        else
+        {
+            return BadRequest();
         }
     }
 
@@ -114,59 +90,43 @@ public class RoleController : BaseApiController
     {
         var response = new ApiResponse<LoginResponse>();
 
-        try
+        var role = await _storeServices.RoleService.GetByIdAsync(request.Id, true);
+
+        if (role == null)
         {
-            var role = await _storeServices.RoleService.GetByIdAsync(request.Id, true);
-
-            if (role == null)
-            {
-                return NotFound();
-            }
-
-            _storeServices.RoleService.Delete(role);
-            await _storeServices.RoleService.SaveChangesAsync();
-
-            return Ok(response);
+            return NotFound();
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex);
-            return StatusCode(500);
-        }
+
+        _storeServices.RoleService.Delete(role);
+        await _storeServices.RoleService.SaveChangesAsync();
+
+        return Ok(response);
     }
-    
+
     [HttpPost("user-role")]
     public async Task<IActionResult> AddUserRole([FromBody] AddUserRoleRequest request)
     {
         var response = new ApiResponse();
 
-        try
+        var isExisted = await _storeServices.UserRoleService.AnyAsync(
+            x => x.UserId == request.UserId &&
+                x.RoleId == request.RoleId);
+
+        if (isExisted)
         {
-            var isExisted = await _storeServices.UserRoleService.AnyAsync(
-                x => x.UserId == request.UserId &&
-                    x.RoleId == request.RoleId);
-
-            if (isExisted)
-            {
-                return BadRequest();
-            }
-
-            var userRole = new UserRole
-            {
-                RoleId = request.RoleId,
-                UserId = request.UserId,
-            };
-
-            _storeServices.UserRoleService.Add(userRole);
-            await _storeServices.UserRoleService.SaveChangesAsync();
-
-            return Ok(response);
+            return BadRequest();
         }
-        catch (Exception ex)
+
+        var userRole = new UserRole
         {
-            Console.WriteLine(ex);
-            return StatusCode(500);
-        }
+            RoleId = request.RoleId,
+            UserId = request.UserId,
+        };
+
+        _storeServices.UserRoleService.Add(userRole);
+        await _storeServices.UserRoleService.SaveChangesAsync();
+
+        return Ok(response);
     }
 
     [HttpDelete("user-role")]
@@ -174,27 +134,19 @@ public class RoleController : BaseApiController
     {
         var response = new ApiResponse();
 
-        try
+        var userRole = await _storeServices.UserRoleService.GetSingleAsync(
+            x => x.UserId == request.UserId &&
+                x.RoleId == request.RoleId);
+
+        if (userRole == null)
         {
-            var userRole = await _storeServices.UserRoleService.GetSingleAsync(
-                x => x.UserId == request.UserId &&
-                    x.RoleId == request.RoleId);
-
-            if (userRole == null)
-            {
-                return BadRequest();
-            }
-
-            _storeServices.UserRoleService.Delete(userRole);
-            await _storeServices.UserRoleService.SaveChangesAsync();
-
-            return Ok(response);
+            return BadRequest();
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex);
-            return StatusCode(500);
-        }
+
+        _storeServices.UserRoleService.Delete(userRole);
+        await _storeServices.UserRoleService.SaveChangesAsync();
+
+        return Ok(response);
     }
 
     [HttpGet("user/{userId}")]
@@ -202,26 +154,18 @@ public class RoleController : BaseApiController
     {
         var response = new ApiResponse<List<RoleResponse>>();
 
-        try
-        {
-            var userRoles = await _storeServices.UserRoleService.GetAllAsync(
-                x => x.UserId == userId);
+        var userRoles = await _storeServices.UserRoleService.GetAllAsync(
+            x => x.UserId == userId);
 
-            var roles = await _storeServices.RoleService.GetAllAsync(
-                x => userRoles.Select(ur => ur.RoleId).Contains(x.Id)
-                , true);
+        var roles = await _storeServices.RoleService.GetAllAsync(
+            x => userRoles.Select(ur => ur.RoleId).Contains(x.Id)
+            , true);
 
-            var rolesResponse = new List<RoleResponse>();
-            rolesResponse.AddRange(roles.Select(x => new RoleResponse(x)));
+        var rolesResponse = new List<RoleResponse>();
+        rolesResponse.AddRange(roles.Select(x => new RoleResponse(x)));
 
-            response.Data = rolesResponse;
-            return Ok(response);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex);
-            return StatusCode(500);
-        }
+        response.Data = rolesResponse;
+        return Ok(response);
     }
 
 }

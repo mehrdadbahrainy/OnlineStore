@@ -5,7 +5,9 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using OnlineStore.DataAccess;
 using OnlineStore.Service;
+using OnlineStore.Web.Api.Middleware;
 using OnlineStore.Web.Api.Security;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 string _allowSpecificOrigins = "_allowSpecificOrigins";
@@ -76,12 +78,19 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.UseSerilogRequestLogging();
 }
 
 app.UseHttpsRedirection();
@@ -90,5 +99,6 @@ app.UseRouting();
 app.UseCors(_allowSpecificOrigins);
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseExceptionHandling();
 app.MapControllers();
 app.Run();
