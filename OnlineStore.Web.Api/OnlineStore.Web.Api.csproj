@@ -34,4 +34,8 @@
     <ProjectReference Include="..\OnlineStore.Service\OnlineStore.Service.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="logs\" />
+  </ItemGroup>
+
 </Project>

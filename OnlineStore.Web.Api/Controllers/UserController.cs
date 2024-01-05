@@ -137,12 +137,5 @@ namespace OnlineStore.Web.Api.Controllers
 
             return Ok();
         }
-
-        [HttpGet("error")]
-        [AllowAnonymous]
-        public async Task<IActionResult> error()
-        {
-            throw new Exception("Errrrrrror");
-        }
     }
 }
